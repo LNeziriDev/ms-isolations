@@ -17,7 +17,14 @@ app.use((req, res, next) => {
 
 // Serve the static front-end assets (index.html, user.html, etc.)
 // so the browser can load them over HTTP instead of the `file:` protocol.
-app.use(express.static(path.join(__dirname, '../public')));
+
+const publicDir = path.join(__dirname, '../public');
+app.use(express.static(publicDir));
+
+// Explicitly return the home page when the root or `/index.html` is requested.
+app.get(['/', '/index.html'], (_req, res) => {
+  res.sendFile(path.join(publicDir, 'index.html'));
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
