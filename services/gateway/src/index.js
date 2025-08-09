@@ -7,6 +7,16 @@ const PRODUCTS_URL = process.env.PRODUCTS_URL || 'http://products-service:3000';
 
 const app = express();
 
+// Allow the HTML pages to call back into the gateway even when they are
+// opened directly from the filesystem. This sets a permissive CORS header
+// which enables requests from a `file:` origin.
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+});
+
+// Serve the static front-end assets (index.html, user.html, etc.)
+// so the browser can load them over HTTP instead of the `file:` protocol.
 app.use(express.static(path.join(__dirname, '../public')));
 
 app.use((req, res, next) => {
