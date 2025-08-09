@@ -1,0 +1,20 @@
+[
+  {
+    "id": "8f12a66c-42c7-4b8f-8b09-7e1e1ab6d29d",
+    "name": "Laptop",
+    "price": 1200.00,
+    "stock": 5
+  },
+  {
+    "id": "b2b7a5d0-1e91-4e21-954e-1347f7f6911a",
+    "name": "Phone",
+    "price": 800.00,
+    "stock": 10
+  },
+  {
+    "id": "c3f8db0f-263f-4df6-9076-2e59954e07de",
+    "name": "Headphones",
+    "price": 150.00,
+    "stock": 25
+  }
+]
