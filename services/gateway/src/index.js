@@ -1,15 +1,34 @@
 const express = require('express');
+const path = require('path');
 
 const USERS_URL = process.env.USERS_URL || 'http://users-service:3000';
 const TASKS_URL = process.env.TASKS_URL || 'http://tasks-service:3000';
 const PRODUCTS_URL = process.env.PRODUCTS_URL || 'http://products-service:3000';
 
 const app = express();
+
+app.use(express.static(path.join(__dirname, '../public')));
+
 app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => console.log(`${req.method} ${req.originalUrl} ${Date.now() - start}ms`));
   next();
 });
+
+async function proxy(url, res) {
+  const start = Date.now();
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    res.json({ data, time: Date.now() - start });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch data' });
+  }
+}
+
+app.get('/users', (req, res) => proxy(`${USERS_URL}/users`, res));
+app.get('/products', (req, res) => proxy(`${PRODUCTS_URL}/products`, res));
+app.get('/tasks', (req, res) => proxy(`${TASKS_URL}/tasks`, res));
 
 app.get('/summary', async (req, res) => {
   try {
