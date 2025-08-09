@@ -1,0 +1,76 @@
+version: '3.8'
+services:
+  users-db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: usersdb
+  users-service:
+    build: ./services/users
+    environment:
+      PORT: 3000
+      DB_HOST: users-db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: usersdb
+    depends_on:
+      - users-db
+    ports:
+      - "3001:3000"
+
+  tasks-db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: tasksdb
+  tasks-service:
+    build: ./services/tasks
+    environment:
+      PORT: 3000
+      DB_HOST: tasks-db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: tasksdb
+      USERS_URL: http://users-service:3000
+    depends_on:
+      - tasks-db
+      - users-service
+    ports:
+      - "3002:3000"
+
+  products-db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: productsdb
+  products-service:
+    build: ./services/products
+    environment:
+      PORT: 3000
+      DB_HOST: products-db
+      DB_PORT: 5432
+      DB_USER: user
+      DB_PASSWORD: pass
+      DB_NAME: productsdb
+    depends_on:
+      - products-db
+    ports:
+      - "3003:3000"
+  gateway-service:
+    build: ./services/gateway
+    environment:
+      PORT: 3000
+      USERS_URL: http://users-service:3000
+      TASKS_URL: http://tasks-service:3000
+      PRODUCTS_URL: http://products-service:3000
+    depends_on:
+      - users-service
+      - tasks-service
+      - products-service
+    ports:
+      - "3000:3000"

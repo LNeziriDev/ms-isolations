@@ -1,0 +1,23 @@
+[
+  {
+    "id": "7ab2af08-5328-44f0-8d60-8c1549fcce3a",
+    "title": "Design homepage",
+    "description": "Create landing page layout",
+    "assigned_to": "3d6f0a2d-4b17-4d8a-a053-70fac33c9b4e",
+    "status": "pending"
+  },
+  {
+    "id": "d6bd8e6d-6f6c-4485-9be0-9f3d4f0b0c2a",
+    "title": "Build API",
+    "description": "Develop REST endpoints",
+    "assigned_to": "ec0c8a58-9bdf-4d9c-8457-503ad3d9e3cd",
+    "status": "in-progress"
+  },
+  {
+    "id": "1c6e4f74-2745-4574-9dcd-95c50a62ddb3",
+    "title": "Write docs",
+    "description": "Document microservices",
+    "assigned_to": "ec0c8a58-9bdf-4d9c-8457-503ad3d9e3cd",
+    "status": "pending"
+  }
+]
