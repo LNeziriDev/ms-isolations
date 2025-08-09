@@ -1,0 +1,63 @@
+version: '3'
+services:
+  products-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: products
+    volumes:
+      - ./datasets:/data
+      - ./db-init/products:/docker-entrypoint-initdb.d
+    ports:
+      - "5433:5432"
+  tasks-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tasks
+    volumes:
+      - ./datasets:/data
+      - ./db-init/tasks:/docker-entrypoint-initdb.d
+    ports:
+      - "5434:5432"
+  users-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: users
+    volumes:
+      - ./datasets:/data
+      - ./db-init/users:/docker-entrypoint-initdb.d
+    ports:
+      - "5435:5432"
+  products-service:
+    build: ./services/products
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@products-db:5432/products
+      PORT: 3001
+    depends_on:
+      - products-db
+    ports:
+      - "3001:3001"
+  tasks-service:
+    build: ./services/tasks
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@tasks-db:5432/tasks
+      PORT: 3002
+    depends_on:
+      - tasks-db
+      - products-service
+    ports:
+      - "3002:3002"
+  users-service:
+    build: ./services/users
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@users-db:5432/users
+      PORT: 3003
+    depends_on:
+      - users-db
+    ports:
+      - "3003:3003"
