@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Gateway Users</title>
+</head>
+<body>
+  <h1>Users</h1>
+  <p id="info"></p>
+  <ul id="users"></ul>
+  <script>
+    async function loadUsers() {
+      const start = performance.now();
+      const res = await fetch('/users');
+      const { data, time } = await res.json();
+      document.getElementById('info').textContent = `Fetched in ${time}ms (client ${Math.round(performance.now() - start)}ms)`;
+      const list = document.getElementById('users');
+      data.forEach(u => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `user.html?id=${u.id}`;
+        a.textContent = u.name;
+        li.appendChild(a);
+        list.appendChild(li);
+      });
+    }
+    loadUsers();
+  </script>
+</body>
+</html>

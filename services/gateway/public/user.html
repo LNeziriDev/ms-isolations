@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>User Details</title>
+</head>
+<body>
+  <h1 id="title"></h1>
+  <h2>Products</h2>
+  <p id="productsInfo"></p>
+  <ul id="products"></ul>
+  <h2>Tasks</h2>
+  <p id="tasksInfo"></p>
+  <ul id="tasks"></ul>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get('id');
+    document.getElementById('title').textContent = `User ${userId}`;
+    async function load() {
+      const prodStart = performance.now();
+      const prodRes = await fetch('/products');
+      const prod = await prodRes.json();
+      document.getElementById('productsInfo').textContent = `Fetched in ${prod.time}ms (client ${Math.round(performance.now() - prodStart)}ms)`;
+      prod.data.forEach(p => {
+        const li = document.createElement('li');
+        li.textContent = p.name;
+        document.getElementById('products').appendChild(li);
+      });
+      const taskStart = performance.now();
+      const taskRes = await fetch('/tasks');
+      const task = await taskRes.json();
+      document.getElementById('tasksInfo').textContent = `Fetched in ${task.time}ms (client ${Math.round(performance.now() - taskStart)}ms)`;
+      task.data.filter(t => t.assigned_to === userId).forEach(t => {
+        const li = document.createElement('li');
+        li.textContent = t.title;
+        document.getElementById('tasks').appendChild(li);
+      });
+    }
+    load();
+  </script>
+</body>
+</html>
