@@ -16,27 +16,33 @@
     const params = new URLSearchParams(window.location.search);
     const userId = params.get('id');
     document.getElementById('title').textContent = `User ${userId}`;
-    async function load() {
-      const prodStart = performance.now();
-      const prodRes = await fetch('/products');
-      const prod = await prodRes.json();
-      document.getElementById('productsInfo').textContent = `Fetched in ${prod.time}ms (client ${Math.round(performance.now() - prodStart)}ms)`;
-      prod.data.forEach(p => {
-        const li = document.createElement('li');
-        li.textContent = p.name;
-        document.getElementById('products').appendChild(li);
-      });
-      const taskStart = performance.now();
-      const taskRes = await fetch('/tasks');
-      const task = await taskRes.json();
-      document.getElementById('tasksInfo').textContent = `Fetched in ${task.time}ms (client ${Math.round(performance.now() - taskStart)}ms)`;
-      task.data.filter(t => t.assigned_to === userId).forEach(t => {
-        const li = document.createElement('li');
-        li.textContent = t.title;
-        document.getElementById('tasks').appendChild(li);
-      });
-    }
-    load();
-  </script>
-</body>
+      // Determine the base URL so that API calls succeed even if this file is
+      // opened directly from disk (origin will start with `file:`).
+      const BASE_URL = window.location.origin.startsWith('file:')
+        ? 'http://localhost:3000'
+        : '';
+
+      async function load() {
+        const prodStart = performance.now();
+        const prodRes = await fetch(`${BASE_URL}/products`);
+        const prod = await prodRes.json();
+        document.getElementById('productsInfo').textContent = `Fetched in ${prod.time}ms (client ${Math.round(performance.now() - prodStart)}ms)`;
+        prod.data.forEach(p => {
+          const li = document.createElement('li');
+          li.textContent = p.name;
+          document.getElementById('products').appendChild(li);
+        });
+        const taskStart = performance.now();
+        const taskRes = await fetch(`${BASE_URL}/tasks`);
+        const task = await taskRes.json();
+        document.getElementById('tasksInfo').textContent = `Fetched in ${task.time}ms (client ${Math.round(performance.now() - taskStart)}ms)`;
+        task.data.filter(t => t.assigned_to === userId).forEach(t => {
+          const li = document.createElement('li');
+          li.textContent = t.title;
+          document.getElementById('tasks').appendChild(li);
+        });
+      }
+      load();
+    </script>
+  </body>
 </html>
