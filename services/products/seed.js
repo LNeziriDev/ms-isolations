@@ -1,15 +1,17 @@
-const fs = require('fs');
-const path = require('path');
 const pool = require('./src/db');
+const { faker } = require('@faker-js/faker');
 
 async function seed() {
-  const dataPath = path.join(__dirname, 'data', 'products.json');
-  const products = JSON.parse(fs.readFileSync(dataPath));
+  const COUNT = 1000;
   await pool.query('DELETE FROM products');
-  for (const p of products) {
-    await pool.query('INSERT INTO products(id,name,price,stock) VALUES($1,$2,$3,$4)', [p.id, p.name, p.price, p.stock]);
+  for (let i = 0; i < COUNT; i++) {
+    const id = faker.string.uuid();
+    const name = faker.commerce.productName();
+    const price = parseFloat(faker.commerce.price());
+    const stock = faker.number.int({ min: 0, max: 1000 });
+    await pool.query('INSERT INTO products(id,name,price,stock) VALUES($1,$2,$3,$4)', [id, name, price, stock]);
   }
-  console.log('Products seeded');
+  console.log(`Seeded ${COUNT} products`);
   process.exit();
 }
 

@@ -1,12 +1,7 @@
-// Tasks service: CRUD for tasks, enriches with user names, seeds links to products
+// Tasks service: CRUD for tasks
 const express = require('express'); // HTTP server framework
-const axios = require('axios'); // HTTP client to call Users/Products services
 const { v4: uuidv4 } = require('uuid'); // UUID generator
 const pool = require('./db'); // PostgreSQL pool
-
-// Internal URLs to related services
-const USERS_SERVICE_URL = process.env.USERS_URL || 'http://users-service:3000';
-const PRODUCTS_SERVICE_URL = process.env.PRODUCTS_URL || 'http://products-service:3000';
 
 // Create app, parse JSON, and log requests with timing
 const app = express();
@@ -46,64 +41,19 @@ async function init() {
     product_ids UUID[] DEFAULT '{}'
   )`);
   await pool.query(`ALTER TABLE tasks ADD COLUMN IF NOT EXISTS product_ids UUID[] DEFAULT '{}'`);
-  // Seed if empty: create some tasks linked to existing users/products if available
-  const { rows: countRows } = await pool.query('SELECT COUNT(*)::int AS c FROM tasks');
-  if (countRows[0].c === 0) {
-    try {
-      const [usersRes, productsRes] = await Promise.allSettled([
-        axios.get(`${USERS_SERVICE_URL}/users`),
-        axios.get(`${PRODUCTS_SERVICE_URL}/products`)
-      ]);
-      const users = usersRes.status === 'fulfilled' ? usersRes.value.data : [];
-      const products = productsRes.status === 'fulfilled' ? productsRes.value.data : [];
-      const pick = (arr, n) => arr.slice(0, Math.max(0, Math.min(n, arr.length)));
-      const sampleUsers = pick(users, 5);
-      const sampleProducts = pick(products, 5);
-      let i = 1;
-      for (const u of sampleUsers) {
-        const id = uuidv4();
-        const product_ids = sampleProducts.filter((_, idx) => (idx + i) % 2 === 0).map(p => p.id);
-        await pool.query(
-          'INSERT INTO tasks(id,title,description,assigned_to,status,product_ids) VALUES($1,$2,$3,$4,$5,$6)',
-          [id, `Seed Task ${i}`, `Auto-seeded task ${i} for ${u.name}`, u.id, 'pending', product_ids]
-        );
-        i++;
-      }
-      console.log(`Seeded ${i - 1} tasks`);
-    } catch (e) {
-      console.log('Tasks seed skipped or failed:', e.message);
-    }
-  }
 }
 
-// List tasks (enriched with assigned user name)
+// List tasks
 app.get('/tasks', async (req, res) => {
   const { rows } = await pool.query('SELECT * FROM tasks');
-  const tasks = await Promise.all(rows.map(async (task) => {
-    const start = Date.now();
-    try {
-      const resp = await axios.get(`${USERS_SERVICE_URL}/users/${task.assigned_to}`);
-      console.log(`Fetched user ${task.assigned_to} in ${Date.now() - start}ms`);
-      return { ...task, assigned_name: resp.data.name };
-    } catch (e) {
-      console.log(`Users service unavailable for ${task.assigned_to}, using ID`);
-      return { ...task, assigned_name: task.assigned_to };
-    }
-  }));
-  res.json(tasks);
+  res.json(rows);
 });
 
-// Get task by id (enriched)
+// Get task by id
 app.get('/tasks/:id', async (req, res) => {
   const { rows } = await pool.query('SELECT * FROM tasks WHERE id=$1', [req.params.id]);
   if (rows.length === 0) return res.status(404).send('Not found');
-  const task = rows[0];
-  try {
-    const resp = await axios.get(`${USERS_SERVICE_URL}/users/${task.assigned_to}`);
-    return res.json({ ...task, assigned_name: resp.data.name });
-  } catch {
-    return res.json({ ...task, assigned_name: task.assigned_to });
-  }
+  res.json(rows[0]);
 });
 
 // Create task

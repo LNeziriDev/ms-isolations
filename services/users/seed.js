@@ -1,15 +1,16 @@
-const fs = require('fs');
-const path = require('path');
 const pool = require('./src/db');
+const { faker } = require('@faker-js/faker');
 
 async function seed() {
-  const dataPath = path.join(__dirname, 'data', 'users.json');
-  const users = JSON.parse(fs.readFileSync(dataPath));
+  const COUNT = 1000;
   await pool.query('DELETE FROM users');
-  for (const u of users) {
-    await pool.query('INSERT INTO users(id,name,email) VALUES($1,$2,$3)', [u.id, u.name, u.email]);
+  for (let i = 0; i < COUNT; i++) {
+    const id = faker.string.uuid();
+    const name = faker.person.fullName();
+    const email = faker.internet.email({ firstName: name.split(' ')[0] });
+    await pool.query('INSERT INTO users(id,name,email) VALUES($1,$2,$3)', [id, name, email]);
   }
-  console.log('Users seeded');
+  console.log(`Seeded ${COUNT} users`);
   process.exit();
 }
 

@@ -4,9 +4,8 @@ import { endpoints, timedFetch } from '../lib/api'
 import Box from '@mui/joy/Box'
 import Typography from '@mui/joy/Typography'
 import Card from '@mui/joy/Card'
-import List from '@mui/joy/List'
-import ListItem from '@mui/joy/ListItem'
 import Link from '@mui/joy/Link'
+import Chip from '@mui/joy/Chip'
 
 export default function Home() {
   const [data, setData] = useState({ users: [], tasks: [], products: [] })
@@ -35,6 +34,13 @@ export default function Home() {
 
   return (
     <Box>
+      <Card variant="soft" sx={{ mb: 3, p: 3 }}>
+        <Typography level="h3" sx={{ mb: 1 }}>Inventory Task Tracker</Typography>
+        <Typography level="body-md">
+          A retail chain uses this system to track employees assigned one or more tasks for maintaining store inventory.
+        </Typography>
+      </Card>
+
       <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, mb: 3 }}>
         <Tile title="Users" to="/users" />
         <Tile title="Products" to="/products" />
@@ -61,18 +67,19 @@ export default function Home() {
                 {tasksForUser.length === 0 ? (
                   <Typography level="body-sm" sx={{ color: 'neutral.500' }}>No tasks</Typography>
                 ) : (
-                  <List size="sm">
+                  <Box sx={{ display: 'grid', gap: 1, mt: 1 }}>
                     {tasksForUser.map(t => (
-                      <ListItem key={t.id}>
-                        {t.title} — {t.status}
+                      <Card key={t.id} variant="outlined" sx={{ p: 1 }}>
+                        <Typography level="body-sm">{t.title}</Typography>
+                        <Chip size="sm" variant="soft" sx={{ mt: 0.5 }}>{t.status}</Chip>
                         {Array.isArray(t.product_ids) && t.product_ids.length > 0 && (
-                          <Typography component="span" level="body-xs" sx={{ color: 'neutral.500' }}>
-                            {' '}with products: {t.product_ids.join(', ')}
+                          <Typography level="body-xs" sx={{ color: 'neutral.500', mt: 0.5 }}>
+                            Products: {t.product_ids.join(', ')}
                           </Typography>
                         )}
-                      </ListItem>
+                      </Card>
                     ))}
-                  </List>
+                  </Box>
                 )}
               </Card>
             )
