@@ -1,23 +1,31 @@
 import React, { useEffect, useState } from 'react'
+import Sheet from '@mui/joy/Sheet'
+import Typography from '@mui/joy/Typography'
+import List from '@mui/joy/List'
+import ListItem from '@mui/joy/ListItem'
 import { onTiming } from '../lib/api'
 
 export default function Banner() {
   const [events, setEvents] = useState([])
   useEffect(() => onTiming(ev => setEvents(prev => [ev, ...prev].slice(0, 5))), [])
   return (
-    <div style={{ background: '#f6f9ff', border: '1px solid #dde7ff', color: '#223', padding: 8, borderRadius: 6, marginBottom: 16 }}>
-      <strong>Recent calls:</strong>
-      {events.length === 0 ? <span> none yet</span> : (
-        <ul style={{ display: 'flex', gap: 12, listStyle: 'none', padding: 0, margin: '6px 0 0' }}>
+    <Sheet variant="soft" sx={{ width: 260, p: 2, borderRadius: 'sm', position: 'sticky', top: 16, height: 'max-content' }}>
+      <Typography level="title-md" sx={{ mb: 1 }}>Recent calls</Typography>
+      {events.length === 0 ? (
+        <Typography level="body-sm">none yet</Typography>
+      ) : (
+        <List size="sm" sx={{ p: 0 }}>
           {events.map((e, idx) => (
-            <li key={idx} style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
-              {e.name}: {e.durationMs}ms <span style={{ color: '#666' }}>({e.status})</span>
-            </li>
+            <ListItem key={idx} sx={{ display: 'block', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' }}>
+              {e.name}: {e.durationMs}ms{' '}
+              <Typography component="span" level="body-xs" sx={{ color: 'neutral.500' }}>
+                ({e.status})
+              </Typography>
+            </ListItem>
           ))}
-        </ul>
+        </List>
       )}
-    </div>
+    </Sheet>
   )
 }
-
 

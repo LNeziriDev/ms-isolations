@@ -1,6 +1,12 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { Link as RouterLink } from 'react-router-dom'
 import { endpoints, timedFetch } from '../lib/api'
+import Box from '@mui/joy/Box'
+import Typography from '@mui/joy/Typography'
+import Card from '@mui/joy/Card'
+import List from '@mui/joy/List'
+import ListItem from '@mui/joy/ListItem'
+import Link from '@mui/joy/Link'
 
 export default function Home() {
   const [data, setData] = useState({ users: [], tasks: [], products: [] })
@@ -27,58 +33,63 @@ export default function Home() {
     load()
   }, [])
 
-  const userIdToUser = useMemo(() => new Map(data.users.map(u => [u.id, u])), [data.users])
-
   return (
-    <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
+    <Box>
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, mb: 3 }}>
         <Tile title="Users" to="/users" />
         <Tile title="Products" to="/products" />
         <Tile title="Tasks" to="/tasks" />
-      </div>
+      </Box>
 
-      <h3>Users and their tasks</h3>
+      <Typography level="h4" sx={{ mb: 1 }}>Users and inventory tasks</Typography>
       {loading ? (
-        <p>Loading...</p>
+        <Typography>Loading...</Typography>
       ) : error ? (
-        <p style={{ color: 'crimson' }}>{error}</p>
+        <Typography color="danger">{error}</Typography>
       ) : (
-        <div style={{ display: 'grid', gap: 12 }}>
+        <Box sx={{ display: 'grid', gap: 2 }}>
           {data.users.map(user => {
             const tasksForUser = data.tasks.filter(t => t.assigned_to === user.id)
             return (
-              <div key={user.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: 12 }}>
-                <div style={{ fontWeight: 600 }}>{user.name} <span style={{ color: '#666', fontWeight: 400 }}>({user.email})</span></div>
+              <Card key={user.id} variant="outlined">
+                <Typography level="title-md">
+                  {user.name}{' '}
+                  <Typography component="span" level="body-sm" sx={{ color: 'neutral.500' }}>
+                    ({user.email})
+                  </Typography>
+                </Typography>
                 {tasksForUser.length === 0 ? (
-                  <div style={{ color: '#666' }}>No tasks</div>
+                  <Typography level="body-sm" sx={{ color: 'neutral.500' }}>No tasks</Typography>
                 ) : (
-                  <ul style={{ margin: '8px 0 0 16px' }}>
+                  <List size="sm">
                     {tasksForUser.map(t => (
-                      <li key={t.id}>
+                      <ListItem key={t.id}>
                         {t.title} — {t.status}
                         {Array.isArray(t.product_ids) && t.product_ids.length > 0 && (
-                          <span style={{ color: '#666' }}> with products: {t.product_ids.join(', ')}</span>
+                          <Typography component="span" level="body-xs" sx={{ color: 'neutral.500' }}>
+                            {' '}with products: {t.product_ids.join(', ')}
+                          </Typography>
                         )}
-                      </li>
+                      </ListItem>
                     ))}
-                  </ul>
+                  </List>
                 )}
-              </div>
+              </Card>
             )
           })}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   )
 }
 
 function Tile({ title, to }) {
   return (
-    <Link to={to} style={{ textDecoration: 'none', color: 'inherit' }}>
-      <div style={{ border: '1px solid #ddd', borderRadius: 8, padding: 24, textAlign: 'center' }}>
-        <div style={{ fontSize: 20, fontWeight: 600 }}>{title}</div>
-        <div style={{ color: '#666' }}>Open {title}</div>
-      </div>
+    <Link component={RouterLink} to={to} sx={{ textDecoration: 'none' }}>
+      <Card variant="outlined" sx={{ textAlign: 'center', p: 3 }}>
+        <Typography level="title-md">{title}</Typography>
+        <Typography level="body-sm" sx={{ color: 'neutral.500' }}>Open {title}</Typography>
+      </Card>
     </Link>
   )
 }
