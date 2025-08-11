@@ -1,31 +1,35 @@
-version: '3.8'
+version: '3.8' # Compose file format version
 services:
+  # PostgreSQL for Users service
   users-db:
     image: postgres:14
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
       POSTGRES_DB: usersdb
+  # Users API
   users-service:
     build: ./services/users
     environment:
-      PORT: 3000
+      PORT: 3000 # internal container port
       DB_HOST: users-db
       DB_PORT: 5432
       DB_USER: user
       DB_PASSWORD: pass
       DB_NAME: usersdb
     depends_on:
-      - users-db
+      - users-db # ensure DB container is created first
     ports:
-      - "3001:3000"
+      - "3001:3000" # host:container
 
+  # PostgreSQL for Tasks service
   tasks-db:
     image: postgres:14
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
       POSTGRES_DB: tasksdb
+  # Tasks API
   tasks-service:
     build: ./services/tasks
     environment:
@@ -35,19 +39,22 @@ services:
       DB_USER: user
       DB_PASSWORD: pass
       DB_NAME: tasksdb
-      USERS_URL: http://users-service:3000
+      USERS_URL: http://users-service:3000 # service-to-service URL
+      PRODUCTS_URL: http://products-service:3000 # service-to-service URL
     depends_on:
       - tasks-db
       - users-service
     ports:
       - "3002:3000"
 
+  # PostgreSQL for Products service
   products-db:
     image: postgres:14
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
       POSTGRES_DB: productsdb
+  # Products API
   products-service:
     build: ./services/products
     environment:
@@ -61,6 +68,7 @@ services:
       - products-db
     ports:
       - "3003:3000"
+  # Gateway API aggregator and static demo host
   gateway-service:
     build: ./services/gateway
     environment:
@@ -74,3 +82,19 @@ services:
       - products-service
     ports:
       - "3000:3000"
+
+  # Frontend SPA served via nginx
+  frontend:
+    build:
+      context: ./services/frontend
+      args:
+        VITE_GATEWAY_URL: http://localhost:3000 # baked at build time (Home)
+        VITE_USERS_URL: http://localhost:3001 # direct service usage on tabs
+        VITE_PRODUCTS_URL: http://localhost:3003
+        VITE_TASKS_URL: http://localhost:3002
+    ports:
+      - "8080:80"
+    depends_on:
+      - gateway-service
+    environment:
+      - NODE_ENV=production
