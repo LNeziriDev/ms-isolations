@@ -6,6 +6,7 @@ import Products from './Products'
 import Tasks from './Tasks'
 import TimingSummary from './TimingSummary'
 import Banner from '../components/Banner'
+import TasksPcPanel from '../components/TasksPcPanel'
 import Box from '@mui/joy/Box'
 import Typography from '@mui/joy/Typography'
 import Link from '@mui/joy/Link'
@@ -14,6 +15,7 @@ export default function App() {
   const navigate = useNavigate()
   return (
     <Box sx={{ display: 'flex', gap: 2, p: 3, maxWidth: 1200, mx: 'auto' }}>
+      <TasksPcPanel />
       <Box sx={{ flex: 1 }}>
         <Box component="header" sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
           <Typography level="h3" sx={{ cursor: 'pointer' }} onClick={() => navigate('/')}>Retail CORP</Typography>

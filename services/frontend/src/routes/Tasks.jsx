@@ -85,7 +85,7 @@ export default function Tasks() {
               <th>Title</th>
               <th>Assigned to</th>
               <th>Status</th>
-              <th>Products</th>
+              <th>Product count</th>
               <th style={{ width: 160 }}>Actions</th>
             </tr>
           </thead>
@@ -95,7 +95,7 @@ export default function Tasks() {
                 <td>{r.title}</td>
                 <td>{r.assigned_name || r.assigned_to}</td>
                 <td>{r.status}</td>
-                <td>{Array.isArray(r.product_ids) ? r.product_ids.join(', ') : ''}</td>
+                <td>{Array.isArray(r.product_ids) ? r.product_ids.length : 0}</td>
                 <td>
                   <button onClick={() => openEdit(r)} style={{ marginRight: 8 }}>Edit</button>
                   <button onClick={() => remove(r)}>Delete</button>

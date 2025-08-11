@@ -1,9 +1,8 @@
 // Products service: CRUD for products, with auto-seeding and DB readiness
 const express = require('express'); // HTTP server framework
-const fs = require('fs'); // Filesystem access for seeding
-const path = require('path'); // Path helpers
 const { v4: uuidv4 } = require('uuid'); // UUID generator
 const pool = require('./db'); // PostgreSQL pool
+const seed = require('../seed'); // Seeding helper
 
 // Create app and parse JSON bodies
 const app = express();
@@ -40,19 +39,10 @@ async function init() {
     price DECIMAL(10,2) NOT NULL,
     stock INT DEFAULT 0
   )`);
-  // Seed if empty
+  // Seed if empty using faker-based seeder
   const { rows: countRows } = await pool.query('SELECT COUNT(*)::int AS c FROM products');
   if (countRows[0].c === 0) {
-    const dataPath = path.join(__dirname, '..', 'data', 'products.json');
-    try {
-      const items = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
-      for (const p of items) {
-        await pool.query('INSERT INTO products(id,name,price,stock) VALUES($1,$2,$3,$4)', [p.id, p.name, p.price, p.stock || 0]);
-      }
-      console.log(`Seeded ${items.length} products`);
-    } catch (e) {
-      console.log('Products seed skipped or failed:', e.message);
-    }
+    await seed();
   }
 }
 

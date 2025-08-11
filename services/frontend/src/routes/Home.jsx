@@ -8,7 +8,7 @@ import Link from '@mui/joy/Link'
 import Chip from '@mui/joy/Chip'
 
 export default function Home() {
-  const [data, setData] = useState({ users: [], tasks: [], products: [] })
+  const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -16,10 +16,10 @@ export default function Home() {
     async function load() {
       try {
         setLoading(true)
-        const res = await timedFetch('Gateway: summary', `${endpoints.gateway}/summary`)
+        const res = await timedFetch('Gateway: summary-with-joins', `${endpoints.gateway}/summary-with-joins`)
         const json = await res.json()
         if (res.ok) {
-          setData(json)
+          setUsers(json)
         } else {
           setError(json?.error || 'Failed to load summary')
         }
@@ -54,36 +54,33 @@ export default function Home() {
         <Typography color="danger">{error}</Typography>
       ) : (
         <Box sx={{ display: 'grid', gap: 2 }}>
-          {data.users.map(user => {
-            const tasksForUser = data.tasks.filter(t => t.assigned_to === user.id)
-            return (
-              <Card key={user.id} variant="outlined">
-                <Typography level="title-md">
-                  {user.name}{' '}
-                  <Typography component="span" level="body-sm" sx={{ color: 'neutral.500' }}>
-                    ({user.email})
-                  </Typography>
+          {users.map(user => (
+            <Card key={user.id} variant="outlined">
+              <Typography level="title-md">
+                {user.name}{' '}
+                <Typography component="span" level="body-sm" sx={{ color: 'neutral.500' }}>
+                  ({user.email})
                 </Typography>
-                {tasksForUser.length === 0 ? (
-                  <Typography level="body-sm" sx={{ color: 'neutral.500' }}>No tasks</Typography>
-                ) : (
-                  <Box sx={{ display: 'grid', gap: 1, mt: 1 }}>
-                    {tasksForUser.map(t => (
-                      <Card key={t.id} variant="outlined" sx={{ p: 1 }}>
-                        <Typography level="body-sm">{t.title}</Typography>
-                        <Chip size="sm" variant="soft" sx={{ mt: 0.5 }}>{t.status}</Chip>
-                        {Array.isArray(t.product_ids) && t.product_ids.length > 0 && (
-                          <Typography level="body-xs" sx={{ color: 'neutral.500', mt: 0.5 }}>
-                            Products: {t.product_ids.join(', ')}
-                          </Typography>
-                        )}
-                      </Card>
-                    ))}
-                  </Box>
-                )}
-              </Card>
-            )
-          })}
+              </Typography>
+              {(!user.tasks || user.tasks.length === 0) ? (
+                <Typography level="body-sm" sx={{ color: 'neutral.500' }}>No tasks</Typography>
+              ) : (
+                <Box sx={{ display: 'grid', gap: 1, mt: 1 }}>
+                  {user.tasks.map(t => (
+                    <Card key={t.id} variant="outlined" sx={{ p: 1 }}>
+                      <Typography level="body-sm">{t.title}</Typography>
+                      <Chip size="sm" variant="soft" sx={{ mt: 0.5 }}>{t.status}</Chip>
+                      {Array.isArray(t.products) && t.products.length > 0 && (
+                        <Typography level="body-xs" sx={{ color: 'neutral.500', mt: 0.5 }}>
+                          Products: {t.products.map(p => p.name).join(', ')}
+                        </Typography>
+                      )}
+                    </Card>
+                  ))}
+                </Box>
+              )}
+            </Card>
+          ))}
         </Box>
       )}
     </Box>

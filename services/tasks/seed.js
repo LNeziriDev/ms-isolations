@@ -1,6 +1,12 @@
 const pool = require('./src/db');
 const { faker } = require('@faker-js/faker');
 
+/**
+ * Seed the tasks table with fake data referencing existing users and
+ * products. Exported so the service can trigger seeding on startup when
+ * the table is empty. When invoked directly it behaves as a CLI
+ * seeding script.
+ */
 async function seed() {
   const COUNT = 1000;
   await pool.query(`CREATE TABLE IF NOT EXISTS tasks (
@@ -24,11 +30,10 @@ async function seed() {
     products = await fetch(productsUrl).then(r => r.json());
   } catch (e) {
     console.log('Failed to fetch users/products:', e.message);
-    process.exit(1);
+    throw e;
   }
   if (!Array.isArray(users) || !Array.isArray(products) || users.length === 0 || products.length === 0) {
-    console.log('Seed users and products before tasks');
-    process.exit(1);
+    throw new Error('Seed users and products before tasks');
   }
   await pool.query('DELETE FROM tasks');
   for (let i = 0; i < COUNT; i++) {
@@ -44,7 +49,13 @@ async function seed() {
     );
   }
   console.log(`Seeded ${COUNT} tasks`);
-  process.exit();
 }
 
-seed();
+if (require.main === module) {
+  seed().then(() => process.exit()).catch(err => {
+    console.error('Task seeding failed', err);
+    process.exit(1);
+  });
+}
+
+module.exports = seed;

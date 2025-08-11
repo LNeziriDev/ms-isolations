@@ -115,6 +115,34 @@ app.get('/summary', async (req, res) => {
   }
 });
 
+// Expanded summary joining tasks with product details for each user
+app.get('/summary-with-joins', async (_req, res) => {
+  try {
+    const [usersRes, tasksRes, productsRes] = await Promise.all([
+      fetch(`${USERS_URL}/users`),
+      fetch(`${TASKS_URL}/tasks`),
+      fetch(`${PRODUCTS_URL}/products`)
+    ]);
+    const [users, tasks, products] = await Promise.all([
+      usersRes.json(),
+      tasksRes.json(),
+      productsRes.json()
+    ]);
+    const productsById = Object.fromEntries(products.map(p => [p.id, p]));
+    const tasksWithProducts = tasks.map(t => ({
+      ...t,
+      products: Array.isArray(t.product_ids) ? t.product_ids.map(id => productsById[id]).filter(Boolean) : []
+    }));
+    const usersWith = users.map(u => ({
+      ...u,
+      tasks: tasksWithProducts.filter(t => t.assigned_to === u.id)
+    }));
+    res.json(usersWith);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch data' });
+  }
+});
+
 // Boot the gateway
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Gateway service running on ${port}`));

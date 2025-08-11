@@ -1,9 +1,8 @@
 // Users service: CRUD for users, with auto-seeding and DB readiness
 const express = require('express'); // HTTP server framework
-const fs = require('fs'); // Filesystem access for seeding
-const path = require('path'); // Path helpers
 const { v4: uuidv4 } = require('uuid'); // UUID generator
 const pool = require('./db'); // PostgreSQL pool
+const seed = require('../seed'); // Seeding helper
 
 // Create app and parse JSON bodies
 const app = express();
@@ -39,19 +38,10 @@ async function init() {
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL
   )`);
-  // Seed if empty
+  // Seed if empty using faker-based seeder
   const { rows: countRows } = await pool.query('SELECT COUNT(*)::int AS c FROM users');
   if (countRows[0].c === 0) {
-    const dataPath = path.join(__dirname, '..', 'data', 'users.json');
-    try {
-      const users = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
-      for (const u of users) {
-        await pool.query('INSERT INTO users(id,name,email) VALUES($1,$2,$3)', [u.id, u.name, u.email]);
-      }
-      console.log(`Seeded ${users.length} users`);
-    } catch (e) {
-      console.log('Users seed skipped or failed:', e.message);
-    }
+    await seed();
   }
 }
 
