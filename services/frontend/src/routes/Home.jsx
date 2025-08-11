@@ -35,9 +35,9 @@ export default function Home() {
   return (
     <Box>
       <Card variant="soft" sx={{ mb: 3, p: 3 }}>
-        <Typography level="h3" sx={{ mb: 1 }}>Inventory Task Tracker</Typography>
+        <Typography level="h3" sx={{ mb: 1 }}>Employee Task Manager</Typography>
         <Typography level="body-md">
-          A retail chain uses this system to track employees assigned one or more tasks for maintaining store inventory.
+          Manage employees and their assigned tasks across your organization in one place.
         </Typography>
       </Card>
 

@@ -12,9 +12,21 @@ async function seed() {
     product_ids UUID[] DEFAULT '{}'
   )`);
   await pool.query(`ALTER TABLE tasks ADD COLUMN IF NOT EXISTS product_ids UUID[] DEFAULT '{}'`);
-  const { rows: users } = await pool.query('SELECT id FROM users');
-  const { rows: products } = await pool.query('SELECT id FROM products');
-  if (users.length === 0 || products.length === 0) {
+
+  // Fetch existing users and products from their respective services
+  const usersUrl = `${process.env.USERS_URL || 'http://localhost:3001'}/users`;
+  const productsUrl = `${process.env.PRODUCTS_URL || 'http://localhost:3003'}/products`;
+
+  let users = [];
+  let products = [];
+  try {
+    users = await fetch(usersUrl).then(r => r.json());
+    products = await fetch(productsUrl).then(r => r.json());
+  } catch (e) {
+    console.log('Failed to fetch users/products:', e.message);
+    process.exit(1);
+  }
+  if (!Array.isArray(users) || !Array.isArray(products) || users.length === 0 || products.length === 0) {
     console.log('Seed users and products before tasks');
     process.exit(1);
   }

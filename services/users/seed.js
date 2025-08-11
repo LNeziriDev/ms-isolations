@@ -3,6 +3,11 @@ const { faker } = require('@faker-js/faker');
 
 async function seed() {
   const COUNT = 1000;
+  await pool.query(`CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL
+  )`);
   await pool.query('DELETE FROM users');
   for (let i = 0; i < COUNT; i++) {
     const id = faker.string.uuid();
