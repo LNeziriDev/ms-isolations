@@ -4,7 +4,16 @@ const pool = require('./src/db');
 
 async function seed() {
   const dataPath = path.join(__dirname, 'data', 'tasks.json');
-  const tasks = JSON.parse(fs.readFileSync(dataPath));
+  const tasks = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  await pool.query(`CREATE TABLE IF NOT EXISTS tasks (
+    id UUID PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    assigned_to UUID NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending',
+    product_ids UUID[] DEFAULT '{}'
+  )`);
+  await pool.query(`ALTER TABLE tasks ADD COLUMN IF NOT EXISTS product_ids UUID[] DEFAULT '{}'`);
   await pool.query('DELETE FROM tasks');
   for (const t of tasks) {
     await pool.query(
