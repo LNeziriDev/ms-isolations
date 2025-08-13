@@ -16,6 +16,7 @@ export default function Home() {
     async function load() {
       try {
         setLoading(true)
+        setError('')
         const res = await timedFetch('Gateway: summary-with-joins', `${endpoints.gateway}/summary-with-joins`)
         const json = await res.json()
         if (res.ok) {
@@ -30,6 +31,9 @@ export default function Home() {
       }
     }
     load()
+    const handler = () => load()
+    window.addEventListener('refresh-summary', handler)
+    return () => window.removeEventListener('refresh-summary', handler)
   }, [])
 
   return (

@@ -143,6 +143,25 @@ app.post('/admin/migrate', async (_req, res) => {
   }
 });
 
+// Reset schema back to the original column name so the demo can be run again.
+app.post('/admin/reset', async (_req, res) => {
+  try {
+    const colRes = await pool.query(
+      `SELECT column_name FROM information_schema.columns WHERE table_name='tasks' AND column_name='products'`
+    );
+    if (colRes.rowCount > 0) {
+      await pool.query('ALTER TABLE tasks RENAME COLUMN products TO product_ids');
+    }
+    productColumn = 'product_ids';
+    await pool.query(
+      `INSERT INTO schema_versions(service,version) VALUES('tasks',1) ON CONFLICT(service) DO UPDATE SET version=EXCLUDED.version`
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: 'Reset failed' });
+  }
+});
+
 // Boot service after DB init
 const port = process.env.PORT || 3000;
 init().then(() => {

@@ -12,6 +12,7 @@ export default function TasksPcPanel() {
   async function breakSchema() {
     setStart(Date.now())
     await fetch(`${endpoints.tasks}/admin/rename-productids`, { method: 'POST' })
+    window.dispatchEvent(new Event('refresh-summary'))
     try {
       const res = await fetch(`${endpoints.gateway}/summary-with-joins`)
       if (!res.ok) throw new Error('failed')
@@ -23,9 +24,18 @@ export default function TasksPcPanel() {
   async function migrate() {
     setState('fixing')
     await fetch(`${endpoints.tasks}/admin/migrate`, { method: 'POST' })
+    window.dispatchEvent(new Event('refresh-summary'))
     await fetch(`${endpoints.gateway}/summary-with-joins`)
     setDowntime(Date.now() - start)
     setState('fixed')
+  }
+
+  async function reset() {
+    await fetch(`${endpoints.tasks}/admin/reset`, { method: 'POST' })
+    window.dispatchEvent(new Event('refresh-summary'))
+    setState('idle')
+    setDowntime(0)
+    setStart(0)
   }
 
   return (
@@ -33,13 +43,19 @@ export default function TasksPcPanel() {
       <Typography level="h4" sx={{ mb: 1 }}>TASKS-PC</Typography>
       <Typography level="body-sm" sx={{ mb: 2 }}>Simulate schema changes of tasks</Typography>
       {state === 'idle' && (
-        <Button onClick={breakSchema}>Change productIDS to products</Button>
+        <Button onClick={breakSchema}>change productIDS to products</Button>
       )}
       {state === 'broken' && (
-        <Button color="warning" onClick={migrate}>Migrate services to latest schema</Button>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Button color="warning" onClick={migrate}>Migrate services to latest schema</Button>
+          <Button variant="outlined" onClick={reset}>Reset schema</Button>
+        </Box>
       )}
       {state === 'fixed' && (
-        <Typography level="body-sm">Services recovered in {downtime} ms</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Typography level="body-sm">Services recovered in {downtime} ms</Typography>
+          <Button variant="outlined" onClick={reset}>Reset schema</Button>
+        </Box>
       )}
     </Box>
   )
